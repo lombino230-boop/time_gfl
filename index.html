@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Timbratura Digitale - Socio Sanitario</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+
+<body>
+    <div id="app">
+        <!-- Header -->
+        <header class="app-header hidden" id="main-header">
+            <div class="header-content">
+                <div class="logo">
+                    <span class="logo-icon"><i data-lucide="shield-check"></i></span>
+                    <h1>DigitalClock</h1>
+                </div>
+                <div class="header-actions">
+                    <button class="icon-button notification-btn" id="notif-btn">
+                        <i data-lucide="bell"></i>
+                        <span class="badge"></span>
+                    </button>
+                    <button class="icon-button menu-btn" id="logout-btn">
+                        <i data-lucide="log-out"></i>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main id="main-content">
+            <!-- Auth Landing Section -->
+            <section id="auth-section" class="active">
+                <div class="auth-container">
+                    <div class="auth-card glass">
+                        <div class="auth-header">
+                            <i data-lucide="activity" class="auth-logo"></i>
+                            <h2>Benvenuto</h2>
+                            <p>Accedi al portale per la timbratura</p>
+                        </div>
+
+                        <div class="auth-tabs">
+                            <button class="tab-btn active" data-tab="login">Login</button>
+                            <button class="tab-btn" data-tab="register">Registrati</button>
+                        </div>
+
+                        <div class="auth-forms">
+                            <!-- Login Form -->
+                            <form id="login-form" class="auth-form active">
+                                <div class="input-group">
+                                    <label for="login-phone">Numero Cellulare</label>
+                                    <div class="input-wrapper">
+                                        <i data-lucide="phone"></i>
+                                        <input type="tel" id="login-phone" placeholder="3XX XXXXXXX" required>
+                                    </div>
+                                </div>
+                                <div id="otp-group" class="input-group hidden">
+                                    <label for="login-otp">Codice SMS</label>
+                                    <div class="input-wrapper">
+                                        <i data-lucide="key"></i>
+                                        <input type="text" id="login-otp" placeholder="XXXXXX" maxlength="6">
+                                    </div>
+                                </div>
+                                <button type="submit" class="primary-btn" id="login-submit">Richiedi Codice</button>
+                            </form>
+
+                            <!-- Register Form -->
+                            <form id="register-form" class="auth-form">
+                                <div class="input-group">
+                                    <label for="reg-company">Codice Univoco Aziendale</label>
+                                    <div class="input-wrapper">
+                                        <i data-lucide="building"></i>
+                                        <input type="text" id="reg-company" placeholder="Es: COOP-2024" required>
+                                    </div>
+                                </div>
+                                <div class="input-group">
+                                    <label for="reg-phone">Numero Cellulare</label>
+                                    <div class="input-wrapper">
+                                        <i data-lucide="phone"></i>
+                                        <input type="tel" id="reg-phone" placeholder="3XX XXXXXXX" required>
+                                    </div>
+                                </div>
+                                <div class="input-group">
+                                    <label for="reg-role">Ruolo Professionale</label>
+                                    <div class="input-wrapper">
+                                        <i data-lucide="user-cog"></i>
+                                        <select id="reg-role" required>
+                                            <option value="" disabled selected>Seleziona ruolo</option>
+                                            <option value="oss">OSS</option>
+                                            <option value="osa">OSA</option>
+                                            <option value="educatore">Educatrice/ore</option>
+                                            <option value="socio-sanitario">Socio Sanitario</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <button type="submit" class="primary-btn">Crea Account</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Dashboard / Clocking Section -->
+            <section id="dashboard-section" class="hidden">
+                <div class="dashboard-container">
+                    <div class="status-card glass">
+                        <div class="status-header">
+                            <span id="geo-status" class="status-badge loading">
+                                <i data-lucide="map-pin"></i>
+                                <span id="geo-label">Verifica posizione...</span>
+                            </span>
+                            <div class="clock-display" id="real-time-clock">00:00:00</div>
+                        </div>
+                        <div class="user-greeting">
+                            <h3>Buongiorno, <span id="user-display-name">Operatore</span></h3>
+                            <p>Pronto per iniziare il turno?</p>
+                        </div>
+                    </div>
+
+                    <div class="clock-action-card glass">
+                        <div class="slider-container">
+                            <div class="slider-track" id="slider-track">
+                                <div class="slider-thumb" id="slider-thumb">
+                                    <i data-lucide="chevron-right"></i>
+                                </div>
+                                <span class="slider-text">Scorri per Timbrare</span>
+                            </div>
+                        </div>
+
+                        <div class="form-details">
+                            <div class="input-group">
+                                <label for="clock-notes">Note / Attività</label>
+                                <textarea id="clock-notes"
+                                    placeholder="Descrizione opzionale delle attività svolte..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="quick-stats">
+                        <div class="stat-item glass">
+                            <i data-lucide="clock"></i>
+                            <div>
+                                <span class="stat-val">38h</span>
+                                <span class="stat-label">Questa sett.</span>
+                            </div>
+                        </div>
+                        <div class="stat-item glass clickable" id="go-to-calendar">
+                            <i data-lucide="calendar"></i>
+                            <div>
+                                <span class="stat-val">Calendario</span>
+                                <span class="stat-label">Ferie e Turni</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Calendar / Holidays Section -->
+            <section id="calendar-section" class="hidden">
+                <div class="calendar-container">
+                    <div class="section-header">
+                        <button class="back-btn" id="back-to-dash">
+                            <i data-lucide="arrow-left"></i>
+                        </button>
+                        <h2>Calendario & Ferie</h2>
+                    </div>
+
+                    <div class="calendar-card glass">
+                        <div class="calendar-header">
+                            <button id="prev-month"><i data-lucide="chevron-left"></i></button>
+                            <h3 id="current-month-year">Marzo 2024</h3>
+                            <button id="next-month"><i data-lucide="chevron-right"></i></button>
+                        </div>
+                        <div class="calendar-grid-header">
+                            <span>L</span><span>M</span><span>M</span><span>G</span><span>V</span><span>S</span><span>D</span>
+                        </div>
+                        <div class="calendar-grid" id="calendar-days">
+                            <!-- Days populated by JS -->
+                        </div>
+                    </div>
+
+                    <div class="legend glass">
+                        <div class="legend-item"><span class="dot work"></span> Lavoro</div>
+                        <div class="legend-item"><span class="dot holiday"></span> Ferie</div>
+                        <div class="legend-item"><span class="dot sick"></span> Malattia</div>
+                        <div class="legend-item"><span class="dot exit"></span> Uscita Ant.</div>
+                    </div>
+
+                    <div class="request-card glass">
+                        <h3>Richiedi Assenza</h3>
+                        <div class="request-row">
+                            <select id="leave-type">
+                                <option value="ferie">Ferie</option>
+                                <option value="malattia">Malattia</option>
+                                <option value="permesso">Permesso</option>
+                            </select>
+                            <input type="date" id="leave-date">
+                            <button class="add-btn"><i data-lucide="plus"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Navigation Bar (Mobile) -->
+        <nav class="app-nav hidden" id="bottom-nav">
+            <button class="nav-item active" data-view="dashboard">
+                <i data-lucide="home"></i>
+                <span>Home</span>
+            </button>
+            <button class="nav-item" data-view="calendar">
+                <i data-lucide="calendar"></i>
+                <span>Calendario</span>
+            </button>
+            <button class="nav-item" data-view="profile">
+                <i data-lucide="user"></i>
+                <span>Profilo</span>
+            </button>
+        </nav>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
