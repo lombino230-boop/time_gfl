@@ -582,6 +582,78 @@ textarea {
     border-radius: 8px;
 }
 
+/* Day Details */
+.day-details-container {
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.details-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.close-details {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-muted);
+}
+
+.entries-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.entry-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    background: #f8f9fa;
+    border-radius: 12px;
+    border: 1px solid #eee;
+}
+
+.entry-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.entry-type {
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-transform: capitalize;
+}
+
+.entry-notes {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.delete-entry-btn {
+    background: none;
+    border: none;
+    color: var(--danger);
+    padding: 8px;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: background 0.2s;
+}
+
+.delete-entry-btn:hover {
+    background: #fff0f0;
+}
+
+.day.clickable:active {
+    background: var(--bg-color);
+    transform: scale(0.95);
+}
+
 /* Nav */
 .app-nav {
     display: flex;

@@ -37,7 +37,11 @@ const elements = {
     navItems: document.querySelectorAll('.nav-item'),
     weeklyHoursVal: document.getElementById('weekly-hours-val'),
     resetHoursBtn: document.getElementById('reset-hours'),
-    sliderText: document.querySelector('.slider-text')
+    sliderText: document.querySelector('.slider-text'),
+    dayDetails: document.getElementById('day-details'),
+    dayEntriesList: document.getElementById('day-entries-list'),
+    selectedDayLabel: document.getElementById('selected-day-label'),
+    closeDayDetails: document.getElementById('close-day-details')
 };
 
 // Helper: Navigation
@@ -367,8 +371,68 @@ function renderCalendar() {
         }
 
         elements.calendarDays.appendChild(dayDiv);
+
+        dayDiv.onclick = () => showDayDetails(new Date(year, month, d));
     }
 }
+
+function showDayDetails(date) {
+    const dateStr = date.toLocaleDateString();
+    elements.selectedDayLabel.textContent = `Dettagli: ${dateStr}`;
+    elements.dayDetails.classList.remove('hidden');
+
+    const dayEntries = state.history.filter(h => new Date(h.date).toLocaleDateString() === dateStr);
+    elements.dayEntriesList.innerHTML = '';
+
+    if (dayEntries.length === 0) {
+        elements.dayEntriesList.innerHTML = '<p class="text-muted">Nessun turno registrato.</p>';
+        return;
+    }
+
+    dayEntries.forEach(entry => {
+        const item = document.createElement('div');
+        item.className = 'entry-item';
+
+        let typeLabel = entry.type;
+        if (typeLabel === 'holiday') typeLabel = 'Ferie';
+        if (typeLabel === 'sick') typeLabel = 'Malattia';
+        if (typeLabel === 'exit') typeLabel = 'Uscita Ant.';
+        if (typeLabel === 'work') typeLabel = 'Lavoro';
+
+        item.innerHTML = `
+            <div class="entry-info">
+                <span class="entry-type">${typeLabel}</span>
+                <span class="entry-notes">${entry.notes || ''}</span>
+            </div>
+            <button class="delete-entry-btn" onclick="deleteEntry(${entry.id})">
+                <i data-lucide="trash-2"></i>
+            </button>
+        `;
+        elements.dayEntriesList.appendChild(item);
+    });
+    initIcons();
+}
+
+function deleteEntry(id) {
+    if (!confirm("Sei sicuro di voler eliminare questa voce?")) return;
+
+    state.history = state.history.filter(h => h.id !== id);
+    localStorage.setItem('history', JSON.stringify(state.history));
+
+    // Refresh display
+    renderCalendar();
+
+    // Update details if still open
+    const openDateLabel = elements.selectedDayLabel.textContent.split(': ')[1];
+    if (openDateLabel) {
+        const [d, m, y] = openDateLabel.split('/');
+        showDayDetails(new Date(y, m - 1, d));
+    }
+}
+
+elements.closeDayDetails.onclick = () => {
+    elements.dayDetails.classList.add('hidden');
+};
 
 document.getElementById('prev-month').onclick = () => {
     state.currentDate.setMonth(state.currentDate.getMonth() - 1);
