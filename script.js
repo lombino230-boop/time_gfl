@@ -7,7 +7,8 @@ const state = {
     currentDate: new Date(),
     weeklyHours: parseFloat(localStorage.getItem('weeklyHours')) || 0,
     startTime: localStorage.getItem('startTime') ? parseInt(localStorage.getItem('startTime')) : null,
-    lastResetWeek: localStorage.getItem('lastResetWeek') || null
+    lastResetWeek: localStorage.getItem('lastResetWeek') || null,
+    selectedDate: null
 };
 
 // Initialize Lucide Icons
@@ -41,8 +42,12 @@ const elements = {
     dayDetails: document.getElementById('day-details'),
     dayEntriesList: document.getElementById('day-entries-list'),
     selectedDayLabel: document.getElementById('selected-day-label'),
-    closeDayDetails: document.getElementById('close-day-details')
+    closeDayDetails: document.getElementById('close-day-details'),
+    clearHistoryBtn: document.getElementById('clear-history')
 };
+
+// ... in state initialization ...
+state.selectedDate = null;
 
 // Helper: Navigation
 function navigate(viewName) {
@@ -377,6 +382,7 @@ function renderCalendar() {
 }
 
 function showDayDetails(date) {
+    state.selectedDate = date;
     const dateStr = date.toLocaleDateString();
     elements.selectedDayLabel.textContent = `Dettagli: ${dateStr}`;
     elements.dayDetails.classList.remove('hidden');
@@ -406,6 +412,7 @@ function showDayDetails(date) {
             </div>
             <button class="delete-entry-btn" onclick="deleteEntry(${entry.id})">
                 <i data-lucide="trash-2"></i>
+                <span>Cancella</span>
             </button>
         `;
         elements.dayEntriesList.appendChild(item);
@@ -423,11 +430,23 @@ function deleteEntry(id) {
     renderCalendar();
 
     // Update details if still open
-    const openDateLabel = elements.selectedDayLabel.textContent.split(': ')[1];
-    if (openDateLabel) {
-        const [d, m, y] = openDateLabel.split('/');
-        showDayDetails(new Date(y, m - 1, d));
+    if (state.selectedDate) {
+        showDayDetails(state.selectedDate);
     }
+}
+
+function clearHistory() {
+    if (!confirm("Sei sicuro di voler svuotare tutta la cronologia? Questa azione non può essere annullata.")) return;
+
+    state.history = [];
+    localStorage.removeItem('history');
+    state.weeklyHours = 0;
+    localStorage.setItem('weeklyHours', 0);
+
+    renderCalendar();
+    elements.dayDetails.classList.add('hidden');
+    updateWeeklyDisplay();
+    alert("Cronologia svuotata correttamente.");
 }
 
 elements.closeDayDetails.onclick = () => {
@@ -452,6 +471,7 @@ elements.navItems.forEach(item => {
 document.getElementById('go-to-calendar').onclick = () => navigate('calendar');
 document.getElementById('back-to-dash').onclick = () => navigate('dashboard');
 elements.resetHoursBtn.onclick = () => resetWeeklyHours(true);
+if (elements.clearHistoryBtn) elements.clearHistoryBtn.onclick = clearHistory;
 
 elements.logoutBtn.onclick = () => {
     localStorage.removeItem('user');
