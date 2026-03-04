@@ -388,6 +388,23 @@ textarea {
     border-radius: 12px;
 }
 
+.stat-content {
+    flex: 1;
+}
+
+.reset-btn {
+    padding: 8px;
+    color: var(--text-muted);
+    opacity: 0.6;
+    transition: all 0.2s;
+}
+
+.reset-btn:hover {
+    opacity: 1;
+    color: var(--danger);
+    background: #fff0f0;
+}
+
 .stat-val {
     display: block;
     font-weight: 700;

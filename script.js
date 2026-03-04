@@ -4,7 +4,10 @@ const state = {
     view: 'auth',
     location: null,
     history: JSON.parse(localStorage.getItem('history')) || [],
-    currentDate: new Date()
+    currentDate: new Date(),
+    weeklyHours: parseFloat(localStorage.getItem('weeklyHours')) || 0,
+    startTime: localStorage.getItem('startTime') ? parseInt(localStorage.getItem('startTime')) : null,
+    lastResetWeek: localStorage.getItem('lastResetWeek') || null
 };
 
 // Initialize Lucide Icons
@@ -31,7 +34,10 @@ const elements = {
     calendarDays: document.getElementById('calendar-days'),
     monthDisplay: document.getElementById('current-month-year'),
     logoutBtn: document.getElementById('logout-btn'),
-    navItems: document.querySelectorAll('.nav-item')
+    navItems: document.querySelectorAll('.nav-item'),
+    weeklyHoursVal: document.getElementById('weekly-hours-val'),
+    resetHoursBtn: document.getElementById('reset-hours'),
+    sliderText: document.querySelector('.slider-text')
 };
 
 // Helper: Navigation
@@ -51,6 +57,8 @@ function navigate(viewName) {
         updateClock();
         requestLocation();
         updateGreeting();
+        checkWeeklyReset();
+        updateWeeklyDisplay();
     }
 
     if (viewName === 'calendar') {
@@ -62,7 +70,55 @@ function navigate(viewName) {
         item.classList.toggle('active', item.dataset.view === viewName);
     });
 
+    // Update Slider text based on clock state
+    if (state.startTime) {
+        elements.sliderText.textContent = "Scorri per Uscire";
+    } else {
+        elements.sliderText.textContent = "Scorri per Timbrare";
+    }
+
     initIcons();
+}
+
+function getWeekNumber(d) {
+    d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+    d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+    var yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+    var weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+    return `${d.getUTCFullYear()}-W${weekNo}`;
+}
+
+function checkWeeklyReset() {
+    const currentWeek = getWeekNumber(new Date());
+    if (state.lastResetWeek !== currentWeek) {
+        resetWeeklyHours(false); // Reset without alert
+        state.lastResetWeek = currentWeek;
+        localStorage.setItem('lastResetWeek', currentWeek);
+    }
+}
+
+function updateWeeklyDisplay() {
+    let currentSessionHours = 0;
+    if (state.startTime) {
+        const diffMs = Date.now() - state.startTime;
+        currentSessionHours = diffMs / (1000 * 60 * 60);
+    }
+    const total = state.weeklyHours + currentSessionHours;
+    elements.weeklyHoursVal.textContent = `${total.toFixed(2)}h`;
+}
+
+function resetWeeklyHours(interactive = true) {
+    if (interactive && !confirm("Vuoi resettare il conteggio delle ore settimanali?")) return;
+
+    state.weeklyHours = 0;
+    state.startTime = null;
+    localStorage.removeItem('startTime');
+    localStorage.setItem('weeklyHours', 0);
+    updateWeeklyDisplay();
+    if (interactive) {
+        elements.sliderText.textContent = "Scorri per Timbrare";
+        alert("Conteggio resettato con successo.");
+    }
 }
 
 // Authentication Logic
@@ -142,7 +198,10 @@ function updateGeoStatus(type, message) {
 function updateClock() {
     const now = new Date();
     document.getElementById('real-time-clock').textContent = now.toLocaleTimeString('it-IT');
-    if (state.view === 'dashboard') setTimeout(updateClock, 1000);
+    if (state.view === 'dashboard') {
+        updateWeeklyDisplay();
+        setTimeout(updateClock, 1000);
+    }
 }
 
 function updateGreeting() {
@@ -221,19 +280,41 @@ function handleClockIn() {
     const notes = document.getElementById('clock-notes').value;
     const now = new Date();
 
-    const entry = {
-        id: Date.now(),
-        date: now.toISOString(),
-        type: 'work',
-        notes: notes,
-        location: state.location
-    };
+    if (!state.startTime) {
+        // Clock In
+        state.startTime = now.getTime();
+        localStorage.setItem('startTime', state.startTime);
+        elements.sliderText.textContent = "Scorri per Uscire";
+        alert('Turno iniziato correttamente!');
+    } else {
+        // Clock Out
+        const diffMs = now.getTime() - state.startTime;
+        const diffHrs = diffMs / (1000 * 60 * 60);
 
-    state.history.push(entry);
-    localStorage.setItem('history', JSON.stringify(state.history));
+        state.weeklyHours += diffHrs;
+        localStorage.setItem('weeklyHours', state.weeklyHours.toFixed(4));
 
-    alert('Timbratura effettuata con successo!');
-    document.getElementById('clock-notes').value = '';
+        const entry = {
+            id: Date.now(),
+            date: now.toISOString(),
+            duration: diffHrs.toFixed(2),
+            type: 'work',
+            notes: notes,
+            location: state.location
+        };
+
+        state.history.push(entry);
+        localStorage.setItem('history', JSON.stringify(state.history));
+
+        state.startTime = null;
+        localStorage.removeItem('startTime');
+        elements.sliderText.textContent = "Scorri per Timbrare";
+
+        alert(`Turno terminato. Hai lavorato ${diffHrs.toFixed(2)} ore.`);
+        document.getElementById('clock-notes').value = '';
+    }
+
+    updateWeeklyDisplay();
     resetSlider();
     renderCalendar();
 }
@@ -306,6 +387,7 @@ elements.navItems.forEach(item => {
 
 document.getElementById('go-to-calendar').onclick = () => navigate('calendar');
 document.getElementById('back-to-dash').onclick = () => navigate('dashboard');
+elements.resetHoursBtn.onclick = () => resetWeeklyHours(true);
 
 elements.logoutBtn.onclick = () => {
     localStorage.removeItem('user');

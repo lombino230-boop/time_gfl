@@ -147,10 +147,13 @@
                     <div class="quick-stats">
                         <div class="stat-item glass">
                             <i data-lucide="clock"></i>
-                            <div>
-                                <span class="stat-val">38h</span>
+                            <div class="stat-content">
+                                <span class="stat-val" id="weekly-hours-val">0h</span>
                                 <span class="stat-label">Questa sett.</span>
                             </div>
+                            <button id="reset-hours" class="icon-button reset-btn" title="Resetta ore">
+                                <i data-lucide="rotate-ccw"></i>
+                            </button>
                         </div>
                         <div class="stat-item glass clickable" id="go-to-calendar">
                             <i data-lucide="calendar"></i>
